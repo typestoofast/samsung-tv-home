@@ -61,7 +61,8 @@ That restart also recorded the full web-app runtime becoming ready at 38.918
 seconds after kernel startup. Four's manually opened process was observed at
 about 37 seconds on the startup log clock, while that runtime was still starting.
 These events identify a startup dependency; they do not measure first visible
-frame or establish a speedup. Panel startup, HDMI negotiation, shutdown, and
+frame or establish a speedup. The runtime may have started on demand after the
+late manual request, so 38.918 seconds is not a proven startup floor. Panel startup, HDMI negotiation, shutdown, and
 Stremio playback have no demonstrated improvement.
 
 Version 0.2.1 skips a redundant source-selection call when reopening the current
@@ -72,6 +73,11 @@ A separately signed C helper was accepted for installation but refused execution
 by the TV's native executable-signature policy. It did not replace the working
 .NET companion. An inert managed update replaced the test executable, and the
 failed loader exited. No security policy was changed.
+
+The subsequent ordinary-Power report also required a Home press to open Four.
+Fresh logs could not be retrieved because the TV was unreachable. See the
+[performance work](performance.md) for prepared responsiveness fixes and the
+remaining measurement gaps.
 
 The comparison used CleanYourTV's
 [Xiaomi Mi TV 4A list](https://github.com/Gathin23/cleanyourtv/blob/main/examples/xiaomi-mi-tv-4a/debloat.txt),

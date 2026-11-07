@@ -8,9 +8,15 @@
   var lastShortcut = 0;
   var busy = false;
   var inputs = [];
+  var inputsReady = false;
+  var discovering = false;
+  var queuedInput = null;
   var bindings = window.FourInputMap || {};
   var labels = { apple: 'Apple TV', switch: 'Switch 2', stremio: 'Stremio', steam: 'Steam' };
 
+  function mark(name) {
+    if (window.FourTiming) window.FourTiming.mark(name);
+  }
   function focus(button) {
     if (selected) selected.tabIndex = -1;
     selected = button;
@@ -39,10 +45,30 @@
     return null;
   }
   function discover() {
+    if (discovering) return;
+    discovering = true;
+    mark('sources-start');
     device.sources(function (error, list) {
-      if (error) { finish('Could not read the TV inputs. ' + error); return; }
+      mark(error ? 'sources-error' : 'sources-ready');
+      discovering = false;
+      if (error) {
+        if (queuedInput !== null || !busy) finish('Could not read the TV inputs. ' + error);
+        queuedInput = null;
+        return;
+      }
       inputs = list;
+      inputsReady = true;
+      if (queuedInput !== null) {
+        var key = queuedInput;
+        queuedInput = null;
+        openInput(key);
+      }
     });
+  }
+  function openInput(key) {
+    var port = portFor(key);
+    if (port === null) { finish(labels[key] + ' could not be found among the TV inputs.'); return; }
+    device.input(port, finish);
   }
 
   shortcuts.forEach(function (shortcut) {
@@ -55,9 +81,11 @@
         return;
       }
       if (!device.available) { finish('Open Four on the TV to use this shortcut.'); return; }
-      var port = portFor(key);
-      if (port === null) { finish(labels[key] + ' could not be found among the TV inputs.'); return; }
-      act(labels[key], function (done) { device.input(port, done); });
+      act(labels[key], function () {
+        if (inputsReady) { openInput(key); return; }
+        queuedInput = key;
+        discover();
+      });
     });
   });
   samsung.addEventListener('click', function () {
@@ -72,6 +100,8 @@
     event.preventDefault();
     if (busy) {
       if (key === 27 || key === 10009) {
+        queuedInput = null;
+        discovering = false;
         device.cancel();
         finish('Request cancelled. An input already selected may remain active.');
       }
@@ -89,10 +119,13 @@
     }
   });
   document.addEventListener('visibilitychange', function () {
+    queuedInput = null;
+    discovering = false;
     device.cancel();
     finish();
     if (!document.hidden) { focus(shortcuts[lastShortcut]); discover(); }
   });
   focus(shortcuts[0]);
+  mark('handlers-ready');
   discover();
 }());

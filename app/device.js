@@ -3,6 +3,8 @@
   var tv = global.tizen;
   var generation = 0;
   var pendingTimer = null;
+  var sourceGeneration = 0;
+  var sourceTimer = null;
   var inventory = [];
 
   function message(error) {
@@ -28,14 +30,27 @@
     generation += 1;
     clearTimeout(pendingTimer);
     pendingTimer = null;
+    sourceGeneration += 1;
+    clearTimeout(sourceTimer);
+    sourceTimer = null;
   }
 
   function sources(done) {
     if (!tv) { done(null, []); return; }
-    var operation = begin(done);
+    sourceGeneration += 1;
+    var current = sourceGeneration;
+    clearTimeout(sourceTimer);
+    function finish(error, list) {
+      if (current !== sourceGeneration) return;
+      sourceGeneration += 1;
+      clearTimeout(sourceTimer);
+      sourceTimer = null;
+      done(error, list);
+    }
+    sourceTimer = setTimeout(function () { finish('The TV inputs did not respond. Try again.'); }, 8000);
     try {
       tv.systeminfo.getPropertyValue('VIDEOSOURCE', function (data) {
-        if (!operation.live()) return;
+        if (current !== sourceGeneration) return;
         inventory = [];
         ['connected', 'disconnected'].forEach(function (state) {
           (data[state] || []).forEach(function (source) {
@@ -45,9 +60,9 @@
           });
         });
         inventory.sort(function (a, b) { return a.number - b.number; });
-        operation.finish(null, inventory);
-      }, function (error) { operation.finish(message(error)); });
-    } catch (error) { operation.finish(message(error)); }
+        finish(null, inventory);
+      }, function (error) { finish(message(error)); });
+    } catch (error) { finish(message(error)); }
   }
 
   function launch(id, done) {

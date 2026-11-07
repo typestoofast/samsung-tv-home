@@ -11,6 +11,9 @@ There is no measured performance improvement or Samsung package-removal claim.
 
 See [Home routing and recovery](docs/home-route.md) and the
 [Android-to-Samsung cleanup comparison](docs/debloat.md) before installing.
+Version 0.2.2 is prepared for hardware testing, with independent input discovery
+and [optional local startup measurements](docs/performance.md). It is not yet
+installed on the test TV.
 
 ![Four dashboard browser preview](docs/preview.png)
 
@@ -29,7 +32,7 @@ project does not yet provide a supported end-to-end discovery tool.
 
 ```sh
 python3 -m http.server 4796 --bind 127.0.0.1 --directory app
-node --test tests/device.test.cjs
+node --test tests/*.test.cjs
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 ```
 

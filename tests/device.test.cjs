@@ -106,6 +106,43 @@ test('missing port never sends a source-change request', () => {
   assert.equal(f.calls.length, 0);
 });
 
+test('launching an app does not discard an in-flight source inventory', () => {
+  const f = fixture();
+  let sources, launched = false;
+  f.api.sources((error, list) => { assert.equal(error, null); sources = list; });
+  f.api.launch('IkWsFHtOY9.Stremio', error => { assert.equal(error, null); launched = true; });
+  f.discover({ connected: [{ type: 'HDMI', number: 2 }], disconnected: [] });
+  assert.equal(sources.length, 1);
+  assert.equal(sources[0].number, 2);
+  f.launched();
+  assert.equal(launched, true);
+});
+
+test('refreshing sources does not cancel a selected input handoff', () => {
+  const f = fixture(); ready(f);
+  let finished = false, refreshed = false;
+  f.api.input(2, error => { assert.equal(error, null); finished = true; });
+  f.api.sources(error => { assert.equal(error, null); refreshed = true; });
+  f.discover({ connected: [{ type: 'HDMI', number: 2 }], disconnected: [] });
+  f.select({ type: 'HDMI', number: 2 });
+  assert.deepEqual(f.calls, [['source', 2], ['launch', 'org.tizen.tv-viewer']]);
+  f.launched();
+  assert.equal(finished, true);
+  assert.equal(refreshed, true);
+});
+
+test('hiding or cancelling drops both source and action callbacks', () => {
+  const f = fixture();
+  let callbacks = 0;
+  f.api.sources(() => { callbacks++; });
+  f.api.launch('IkWsFHtOY9.Stremio', () => { callbacks++; });
+  f.api.cancel();
+  f.discover({ connected: [{ type: 'HDMI', number: 2 }], disconnected: [] });
+  f.launched();
+  f.expire();
+  assert.equal(callbacks, 0);
+});
+
 test('label discovery rejects ambiguous matches and avoids guessing port numbers', () => {
   const f = fixture();
   assert.equal(f.api.match('apple', [{ name: 'Apple TV', number: 3 }]), 3);
