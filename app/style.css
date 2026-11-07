@@ -1,0 +1,18 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #101112; color: #f5f5f3; }
+body { font-family: "SamsungOne", "Helvetica Neue", sans-serif; overflow: hidden; }
+button { font: inherit; cursor: pointer; color: inherit; }
+main { height: 100vh; padding: 7vh 7vw; position: relative; }
+.destinations { display: flex; align-items: center; position: absolute; top: 27vh; left: 7vw; right: 7vw; height: 38vh; }
+.destination { width: 25%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; border: 0; padding: 2vw; background: transparent; outline: none; }
+.destination img { display: block; width: 8.6vw; height: 8.6vw; opacity: .6; }
+.apple img { width: 14vw; height: 14vw; }
+.switch img { width: 7.6vw; height: 7.6vw; }
+.stremio img { width: 9.5vw; height: 9.5vw; }
+.destination:focus img { opacity: 1; }
+.destination:focus::after { content: ""; position: absolute; bottom: 1vh; left: 37%; width: 26%; height: 4px; background: #f5f5f3; }
+footer { position: absolute; left: 7vw; right: 7vw; bottom: 6vh; display: flex; align-items: center; justify-content: space-between; }
+#status { margin: 0; max-width: 68%; color: #c5c7c8; font-size: 1.35vw; line-height: 1.4; }
+#samsung { border: 0; background: transparent; padding: 14px 18px; color: #b7bbbe; font-size: 1.3vw; border-radius: 4px; }
+#samsung:focus { outline: 3px solid #f5f5f3; outline-offset: 5px; color: #f5f5f3; }
+body.busy .destination:focus::after { background: #969c9f; }

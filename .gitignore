@@ -1,0 +1,17 @@
+.local/
+dist/
+.buildResult/
+node_modules/
+*.wgt
+*.tpk
+bin/
+obj/
+*.p12
+*.pfx
+*.pem
+*.key
+profiles.xml
+.DS_Store
+output/
+.playwright-cli/
+__pycache__/

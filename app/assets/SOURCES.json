@@ -1,0 +1,26 @@
+[
+  {
+    "file": "appletv.svg",
+    "url": "https://raw.githubusercontent.com/simple-icons/simple-icons/4d29a35c954699b389a834aacc97dd6e7e74143c/icons/appletv.svg",
+    "sha256": "33ba9e5ad3d65d98d8a39499a520eeb704424f3426621fc066b8320626f2f912",
+    "adaptation": "white fill"
+  },
+  {
+    "file": "nintendoswitch.svg",
+    "url": "https://raw.githubusercontent.com/simple-icons/simple-icons/11.15.0/icons/nintendoswitch.svg",
+    "sha256": "720f233e56bac500f35768b8bd07f21fbc8e6457f1667ca7dd5aa4daa9c88081",
+    "adaptation": "white fill"
+  },
+  {
+    "file": "steam.svg",
+    "url": "https://raw.githubusercontent.com/simple-icons/simple-icons/4d29a35c954699b389a834aacc97dd6e7e74143c/icons/steam.svg",
+    "sha256": "e1297f4a8ee3a35f998cd457aa6c0c8df62d9114ab68cb984d682d1d070d31e7",
+    "adaptation": "white fill"
+  },
+  {
+    "file": "stremio.svg",
+    "url": "https://raw.githubusercontent.com/Stremio/stremio-brand/3f3743087b11e81374cf943aaf1e041af1c97ee3/logos/SVG/stremio-logo-icon-only-fullcolor.svg",
+    "sha256": "33ff6f851753093937519b63f8fd7828890b09a478a7b2d67801cb606126ee6a",
+    "adaptation": "none"
+  }
+]
