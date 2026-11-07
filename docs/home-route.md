@@ -2,8 +2,11 @@
 
 The owner confirmed on 6 November 2026 that a short press of Samsung Home opens
 Four without Samsung's bar. The test device is QN65Q70TAFXZC, Tizen 5.5.0,
-firmware T-NKMAKUC-2743.0. Other models, firmware updates, cold-boot persistence,
-and the Apple TV remote's Home button are not verified.
+firmware T-NKMAKUC-2743.0. The short-Home route also survived one long-Power
+restart: Samsung's bar appeared at startup, then the owner pressed Home and Four
+loaded. This confirms that tested route survived the restart; it does not establish
+automatic startup. Other models, firmware updates, and the Apple TV remote's Home
+button are not verified.
 
 The mechanism is an undocumented Samsung manifest extension. A signed native
 companion replaces the existing `com.samsung.tv.csfs` short-Home target with

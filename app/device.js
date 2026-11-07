@@ -63,6 +63,24 @@
     var source = inventory.filter(function (item) { return item.number === number; })[0];
     if (!source) { done('This HDMI input is unavailable.'); return; }
     var operation = begin(done);
+    function openViewer() {
+      try {
+        tv.application.launch('org.tizen.tv-viewer', function () { operation.finish(null); }, function () {
+          operation.finish('Input selected, but the TV picture did not open. Use Samsung Home to select the input.');
+        });
+      } catch (error) { operation.finish(message(error)); }
+    }
+    var current = null;
+    try {
+      if (typeof tv.tvwindow.getSource === 'function') current = tv.tvwindow.getSource('MAIN');
+    } catch (error) {
+      // A failed current-source read must not prevent the normal switch.
+      current = null;
+    }
+    if (current && current.type === 'HDMI' && current.number === number) {
+      openViewer();
+      return;
+    }
     try {
       tv.tvwindow.setSource(source.raw, function (selected) {
         if (!operation.live()) return;
@@ -70,11 +88,7 @@
           operation.finish('The TV selected a different input.');
           return;
         }
-        try {
-          tv.application.launch('org.tizen.tv-viewer', function () { operation.finish(null); }, function () {
-            operation.finish('Input selected, but the TV picture did not open. Use Samsung Home to select the input.');
-          });
-        } catch (error) { operation.finish(message(error)); }
+        openViewer();
       }, function (error) { operation.finish(message(error)); }, 'MAIN');
     } catch (error) { operation.finish(message(error)); }
   }

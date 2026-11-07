@@ -52,9 +52,26 @@ log was not synchronized with a physical Power press. Steady-state samples showe
 84-94% CPU idle and no I/O wait; they do not measure boot-time contention.
 
 Four's small interface and verified Home route remove navigation through the
-stock Home bar. They do not establish faster panel startup, HDMI negotiation,
-shutdown, or Stremio playback. Automatic startup into Four and restart persistence
-remain unverified.
+stock Home bar. The Home route survived one long-Power restart. Samsung's bar
+appeared at startup, and the owner then pressed Home to open Four. Automatic
+startup did not work in that trial, despite the first-screen and autorun settings
+retaining the requested values.
+
+That restart also recorded the full web-app runtime becoming ready at 38.918
+seconds after kernel startup. Four's manually opened process was observed at
+about 37 seconds on the startup log clock, while that runtime was still starting.
+These events identify a startup dependency; they do not measure first visible
+frame or establish a speedup. Panel startup, HDMI negotiation, shutdown, and
+Stremio playback have no demonstrated improvement.
+
+Version 0.2.1 skips a redundant source-selection call when reopening the current
+HDMI input. The fallback and different-input paths pass automated tests. Visible
+input-switch timing has not been measured.
+
+A separately signed C helper was accepted for installation but refused execution
+by the TV's native executable-signature policy. It did not replace the working
+.NET companion. An inert managed update replaced the test executable, and the
+failed loader exited. No security policy was changed.
 
 The comparison used CleanYourTV's
 [Xiaomi Mi TV 4A list](https://github.com/Gathin23/cleanyourtv/blob/main/examples/xiaomi-mi-tv-4a/debloat.txt),
