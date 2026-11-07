@@ -4,8 +4,10 @@ body { font-family: "SamsungOne", "Helvetica Neue", sans-serif; overflow: hidden
 button { font: inherit; cursor: pointer; color: inherit; }
 main { height: 100vh; padding: 7vh 7vw; position: relative; }
 .destinations { display: flex; align-items: center; position: absolute; top: 27vh; left: 7vw; right: 7vw; height: 38vh; }
-.destination { width: 25%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; border: 0; padding: 2vw; background: transparent; outline: none; }
-.destination img { display: block; width: 8.6vw; height: 8.6vw; opacity: .6; }
+.destination { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; border: 0; padding: 2vw; background: transparent; outline: none; }
+.destination img { display: block; width: 8.6vw; height: 8.6vw; max-width: 100%; object-fit: contain; opacity: .6; }
+.destinations.multiline { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr); top: 12vh; height: 64vh; gap: 2vh 0; }
+.destination-label { position: absolute; bottom: 4vh; left: 0; right: 0; font-size: 1.3vw; color: #c5c7c8; }
 .apple img { width: 14vw; height: 14vw; }
 .switch img { width: 7.6vw; height: 7.6vw; }
 .stremio img { width: 9.5vw; height: 9.5vw; }

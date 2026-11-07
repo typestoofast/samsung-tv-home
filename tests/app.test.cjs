@@ -23,7 +23,13 @@ function eventTarget(properties = {}) {
   });
 }
 
-function fixture() {
+function fixture(config = null) {
+  const definitions = config || [
+    { key: 'apple', label: 'Apple TV', kind: 'hdmi' },
+    { key: 'switch', label: 'Switch 2', kind: 'hdmi' },
+    { key: 'stremio', label: 'Stremio', kind: 'app', appId: 'IkWsFHtOY9.Stremio' },
+    { key: 'steam', label: 'Steam', kind: 'hdmi' }
+  ];
   const calls = [];
   const reads = [];
   const actions = [];
@@ -37,10 +43,13 @@ function fixture() {
       contains(name) { return classes.has(name); }
     } }
   });
-  const buttons = Object.fromEntries(['apple', 'switch', 'stremio', 'steam', 'samsung'].map(key => {
+  const buttons = Object.fromEntries([...definitions, { key: 'samsung' }].map(definition => {
+    const key = definition.key;
+    const attributes = { 'data-key': key, 'aria-label': definition.label, 'data-kind': definition.kind,
+      'data-app-id': definition.appId, 'data-port': definition.port, 'data-source-name': definition.sourceName };
     const button = eventTarget({
       tagName: 'BUTTON', tabIndex: -1,
-      getAttribute(name) { return name === 'data-key' ? key : null; },
+      getAttribute(name) { return attributes[name] ?? null; },
       focus() { document.activeElement = button; document.emit('focusin', { target: button }); },
       click() { button.emit('click'); }
     });
@@ -48,7 +57,7 @@ function fixture() {
   }));
   document.querySelectorAll = selector => {
     assert.equal(selector, '.destination');
-    return ['apple', 'switch', 'stremio', 'steam'].map(key => buttons[key]);
+    return definitions.map(item => buttons[item.key]);
   };
   document.getElementById = id => id === 'status' ? status : buttons[id];
   function action(kind, value, done) {
@@ -75,6 +84,7 @@ function fixture() {
   vm.runInNewContext(source, { window: { FourDevice: device, document }, document });
   return {
     calls, reads, status,
+    focused() { return document.activeElement.getAttribute('data-key'); },
     busy() { return classes.has('busy'); },
     click(key) { buttons[key].click(); },
     key(keyCode) { document.emit('keydown', { keyCode, preventDefault() {} }); },
@@ -110,6 +120,60 @@ test('an HDMI click during initial discovery waits and opens the selected input 
   f.complete(0);
   assert.equal(f.busy(), false);
   assert.equal(f.status.textContent, '');
+});
+
+test('generated shortcuts use the detected port and installed app ID, not the example household', () => {
+  const f = fixture([
+    { key: 'hdmi-1', label: 'PlayStation 5', kind: 'hdmi', port: 1, sourceName: 'PlayStation 5' },
+    { key: 'app-0', label: 'Stremio', kind: 'app', appId: 'different.Stremio' }
+  ]);
+  f.click('app-0');
+  assert.deepEqual(f.calls, [['launch', 'different.Stremio']]);
+  f.complete(0);
+  f.discover(0, null, [{ number: 1, name: '' }]);
+  f.click('hdmi-1');
+  assert.deepEqual(f.calls[1], ['input', 1]);
+});
+
+test('live names follow a moved device and reject ambiguous or contradictory saved bindings', () => {
+  const config = [{ key: 'hdmi-3', label: 'Apple TV', kind: 'hdmi', port: 3, sourceName: 'Apple TV' }];
+  const moved = fixture(config);
+  moved.discover(0, null, [{ number: 1, name: 'Apple TV' }, { number: 3, name: 'Console' }]);
+  moved.click('hdmi-3');
+  assert.deepEqual(moved.calls, [['input', 1]]);
+  for (const list of [
+    [{ number: 1, name: 'Apple TV' }, { number: 3, name: 'Apple TV' }],
+    [{ number: 3, name: 'Other device' }]
+  ]) {
+    const f = fixture(config);
+    f.discover(0, null, list);
+    f.click('hdmi-3');
+    assert.deepEqual(f.calls, []);
+    assert.match(f.status.textContent, /could not be found/);
+  }
+});
+
+test('six shortcuts navigate both rows, edges, and Samsung Home', () => {
+  const f = fixture(Array.from({ length: 6 }, (_, index) => ({
+    key: 'app-' + index, label: 'App ' + index, kind: 'app', appId: 'installed.' + index
+  })));
+  f.key(37);
+  assert.equal(f.focused(), 'app-0');
+  f.key(40);
+  assert.equal(f.focused(), 'app-4');
+  f.key(39);
+  f.key(39);
+  assert.equal(f.focused(), 'app-5');
+  f.key(38);
+  assert.equal(f.focused(), 'app-1');
+  f.key(39);
+  f.key(39);
+  f.key(39);
+  assert.equal(f.focused(), 'app-3');
+  f.key(40);
+  assert.equal(f.focused(), 'samsung');
+  f.key(38);
+  assert.equal(f.focused(), 'app-3');
 });
 
 test('Back cancels a queued HDMI selection and allows a new selection', () => {

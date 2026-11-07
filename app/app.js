@@ -12,7 +12,18 @@
   var discovering = false;
   var queuedInput = null;
   var bindings = window.FourInputMap || {};
-  var labels = { apple: 'Apple TV', switch: 'Switch 2', stremio: 'Stremio', steam: 'Steam' };
+  var destinations = {};
+  var columns = Math.min(shortcuts.length, 4);
+  shortcuts.forEach(function (button) {
+    var key = button.getAttribute('data-key');
+    var port = Number(button.getAttribute('data-port'));
+    destinations[key] = {
+      label: button.getAttribute('aria-label'),
+      kind: button.getAttribute('data-kind'),
+      appId: button.getAttribute('data-app-id')
+    };
+    if (port > 0) bindings[key] = { port: port, assignedName: button.getAttribute('data-source-name') };
+  });
 
   function mark(name) {
     if (window.FourTiming) window.FourTiming.mark(name);
@@ -38,10 +49,20 @@
     action(finish);
   }
   function portFor(key) {
+    var binding = bindings[key];
+    if (binding) {
+      function normalized(name) { return (name || '').trim().replace(/\s+/g, ' ').toLowerCase(); }
+      var matches = inputs.filter(function (input) {
+        return normalized(input.name) === normalized(binding.assignedName);
+      });
+      if (matches.length === 1) return matches[0].number;
+      if (matches.length > 1) return null;
+      var saved = inputs.filter(function (input) { return input.number === binding.port; })[0];
+      if (saved && (!saved.name.trim() || /^hdmi\s*\d*$/i.test(saved.name.trim()))) return binding.port;
+      return null;
+    }
     var discovered = device.match(key, inputs);
     if (discovered !== null) return discovered;
-    var binding = bindings[key];
-    if (binding && inputs.some(function (input) { return input.number === binding.port; })) return binding.port;
     return null;
   }
   function discover() {
@@ -67,7 +88,7 @@
   }
   function openInput(key) {
     var port = portFor(key);
-    if (port === null) { finish(labels[key] + ' could not be found among the TV inputs.'); return; }
+    if (port === null) { finish(destinations[key].label + ' could not be found among the TV inputs.'); return; }
     device.input(port, finish);
   }
 
@@ -76,12 +97,13 @@
       if (busy) return;
       focus(shortcut);
       var key = shortcut.getAttribute('data-key');
-      if (key === 'stremio') {
-        act(labels[key], function (done) { device.launch('IkWsFHtOY9.Stremio', done); });
+      var destination = destinations[key];
+      if (destination.kind === 'app') {
+        act(destination.label, function (done) { device.launch(destination.appId, done); });
         return;
       }
       if (!device.available) { finish('Open Four on the TV to use this shortcut.'); return; }
-      act(labels[key], function () {
+      act(destination.label, function () {
         if (inputsReady) { openInput(key); return; }
         queuedInput = key;
         discover();
@@ -108,14 +130,19 @@
       return;
     }
     if (key === 13) { selected.click(); return; }
-    if (key === 27 || key === 10009 || key === 40) { focus(samsung); return; }
+    if (key === 27 || key === 10009) { focus(samsung); return; }
     if (selected === samsung) {
       if (key === 38) focus(shortcuts[lastShortcut]);
       return;
     }
-    if (key === 37 || key === 39) {
-      var next = shortcuts.indexOf(selected) + (key === 37 ? -1 : 1);
-      focus(shortcuts[Math.max(0, Math.min(shortcuts.length - 1, next))]);
+    var index = shortcuts.indexOf(selected);
+    var rowStart = Math.floor(index / columns) * columns;
+    if (key === 37) focus(shortcuts[Math.max(rowStart, index - 1)]);
+    if (key === 39) focus(shortcuts[Math.min(rowStart + columns - 1, shortcuts.length - 1, index + 1)]);
+    if (key === 38 && index >= columns) focus(shortcuts[index - columns]);
+    if (key === 40) {
+      if (index + columns < shortcuts.length) focus(shortcuts[index + columns]);
+      else focus(samsung);
     }
   });
   document.addEventListener('visibilitychange', function () {

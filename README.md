@@ -1,80 +1,105 @@
 # Four
 
-A small, offline Samsung TV dashboard for Apple TV over HDMI, Nintendo Switch 2,
-Stremio, and Steam over HDMI. Built for a QN65Q70TAFXZC running Tizen 5.5.0.
+An offline Samsung TV home with shortcuts to your HDMI devices and installed
+apps. An agent gathers the TV's inventory, resolves device names and app IDs,
+finds local logos, and prepares a private build with 1-8 shortcuts.
+Samsung Home remains available through a separate button.
 
-**Status: experimental, tested on one TV.** Version 0.2.2 is installed.
-The owner confirmed that the Samsung remote's short Home press opens Four without
-Samsung's Home bar. The Home route survived one long-Power restart. Automatic
-startup into Four did not work in that trial.
-There is no measured performance improvement or Samsung package-removal claim.
+**Experimental, tested on one TV:** QN65Q70TAFXZC, Tizen 5.5.0,
+firmware T-NKMAKUC-2743.0. The installed version is 0.2.2. The configurable
+setup workflow still needs a real-TV test.
 
-See [Home routing and recovery](docs/home-route.md) and the
-[Android-to-Samsung cleanup comparison](docs/debloat.md) before installing.
-The owner tested Home, navigation, and opening Apple TV on version 0.2.2 and
-reported that it felt very fast. It includes independent input discovery and
-[optional local startup measurements](docs/performance.md). Other input and
-recovery checks remain open; this is not a measured before/after speedup.
+The owner confirmed that short Home on the Samsung remote opens Four without
+Samsung's Home bar, and that navigation and opening Apple TV felt very fast.
+The Home route survived one long-Power restart. Both recorded power tests
+required a Home press to open Four; automatic startup remains unresolved.
+There is no measured before/after speedup. No Samsung package was disabled or
+uninstalled. See the [cleanup results](docs/debloat.md) and
+[performance measurements](docs/performance.md).
 
-![Four dashboard browser preview](docs/preview.png)
+![Four running on the Samsung Q70T](docs/q70t-four.jpg)
 
-Browser preview of the deployed interface. This image is not a TV capture.
+Four 0.2.2 on the owner's Q70T, photographed on 7 November 2026. This frame was
+cropped from the owner's video; the TV interface is unchanged. These four
+destinations are an example, not a required configuration. A separate
+[browser preview](docs/preview.png) shows the same original layout.
 
-The four logo buttons use public Tizen APIs. Samsung Home remains an explicit
-destination. There are no runtime dependencies,
-network permissions, background services, polling loops, or animations.
+## Set up your home
 
-This TV's public source API returns HDMI port numbers without the saved names.
-The packaging tool imports a private export of those names. The owner does not
-assign ports in the app. This is an installation snapshot: refresh it after
-moving cables or renaming inputs. Other models and firmware are not verified.
-The export was obtained through an undocumented developer interface; this
-project does not yet provide a supported end-to-end discovery tool.
+Agents should read [AGENTS.md](AGENTS.md) and follow the
+[setup workflow](docs/agent-setup.md). It covers discovery, missing names,
+local artwork, signing and real-device checks.
 
-```sh
-python3 -m http.server 4796 --bind 127.0.0.1 --directory app
-node --test tests/*.test.cjs
-python3 -m unittest discover -s tests -p 'test_*.py' -v
-```
+Discovery needs an authorized Samsung Web Inspector session, an existing
+inventory, or accessible TV Sources and installed-app information. The public
+source API on the tested Q70T returns HDMI numbers without saved names. An
+existing native-name export or the TV's Sources screen must fill that gap.
+The repository does not provide a bootstrap installer or a supported native-name
+collector. Unknown destinations stay unresolved instead of inheriting the
+original owner's settings.
 
-Open the local preview and use arrows, Enter, and Escape. A browser preview cannot
-switch a TV input or launch a TV app. Source discovery and physical remote behavior
-still require real-device checks. The Apple TV remote's Home button may be handled
-by the Apple TV itself; do not assume it invokes Samsung's Home route.
-
-Use Samsung's official certificate tools to create an owner-controlled TV Public
-certificate profile containing the target TV's DUID. Keep that profile, private
-keys, passwords, and device records outside Git. Package and sign the contents of
-`app/` with Tizen CLI. After `tizen build-web -- app`, import the source names
-into the build output, then sign that directory:
+After saving the observed inventory as `.local/inventory.json`, generate a plan:
 
 ```sh
-python3 tools/import-inputs.py \
-  .local/tv-input-names.json app/.buildResult/input-map.js \
-  --model QN65Q70TAFXZC --firmware T-NKMAKUC-2743.0
+python3 tools/setup-home.py \
+  --inventory .local/inventory.json --out .local/home.json
 ```
 
-The private JSON export is an array of native source records with `EditName`,
-`DetectedName`, and `SourceType`. The importer requires one unambiguous match
-per HDMI destination. The tracked `app/input-map.js` contains no owner bindings.
-Never commit generated packages, source exports, signing profiles or device IDs.
+This includes HDMI sources, including disconnected devices. Add
+`--apps Stremio Netflix` to request those installed apps, or `--exclude-ports 1`
+to omit a port.
+The command exits with code 2 until names, app matches, logos and the shortcut
+count are resolved. Keep supporting evidence and any exclusions privately.
 
-The current application identity is `Q70Home001.Home`.
-Check that it does not collide with an installed app before deployment.
+Stage the completed plan and preview it:
+
+```sh
+python3 tools/stage-app.py --home .local/home.json --out .local/stage
+python3 -m http.server 4796 --bind 127.0.0.1 --directory .local/stage
+```
+
+Open `http://127.0.0.1:4796` and use arrows, Enter and Escape. Check the owner's
+destinations before packaging. A browser cannot switch TV inputs, launch TV
+apps or verify physical remote behavior. The app has no runtime dependencies,
+network permission, remote assets, background services, polling or animations.
+
+Build and sign the staged directory with Samsung's official Tizen tools and an
+owner-controlled TV Public certificate profile containing the target TV's DUID.
+The current app identity is `Q70Home001.Home`; check for a collision before
+installing. Keep inventories, home configurations, downloaded assets, source
+exports, signing material, device records and packages under `.local/`, outside
+Git. Verify every shortcut on the TV after installation.
+
+The older `--inputs` staging option remains available for the original four
+destinations. It requires a native source export and the exact tested model and
+firmware. See the [setup workflow](docs/agent-setup.md) for its limits.
+
+## Physical Home and recovery
 
 The dashboard alone does not replace the physical Home button. The separate
 source-built [native companion](native/Route.cs) and
 [offline package builder](tools/home-route.py) implement the tested Q70T route.
 They use an undocumented Samsung manifest extension and require an independently
-captured baseline, the exact supported firmware, and tested recovery. The builder
-does not connect to a TV. A supported baseline collector is not yet provided.
+captured baseline, the exact supported firmware and tested recovery.
+The builder does not connect to a TV. A supported baseline collector is not
+provided. Follow [Home routing and recovery](docs/home-route.md) before changing
+the route, and preserve a working route during ordinary home customization.
 
-No root method, uninstall tool, service modification, background Home watcher or
-network feature is included. Keep the signed stock-restore package. Never
-uninstall an active Home-route carrier.
+Keep the signed stock-restore package. Never uninstall an active Home-route
+carrier. The Apple TV remote's Home button may be handled by Apple TV itself;
+its behavior is not established by the Samsung remote test.
 
-This project is separate from cleanyourtv's Android launcher. Any upstream PR must
-report only verified device results. Do not publish private device baselines.
+## Development
 
-Licensed under MIT. Device and service names identify the owner's destinations;
-this project has no affiliation with Samsung, Apple, Nintendo, Stremio, or Valve.
+```sh
+node --test tests/*.test.cjs
+python3 -m unittest discover -s tests -p 'test_*.py' -v
+```
+
+This project is separate from CleanYourTV's Android launcher. It includes no
+Samsung package-disable list, root method, vendor-service modification or
+resident Home watcher. Any upstream contribution follows CleanYourTV's showcase
+workflow and reports only verified results. Do not publish private baselines.
+
+Licensed under MIT. Device and service names identify destinations; this project
+has no affiliation with Samsung, Apple, Nintendo, Stremio or Valve.
