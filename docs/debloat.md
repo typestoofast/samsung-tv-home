@@ -1,7 +1,7 @@
 # Samsung cleanup results and limits
 
 Tested on QN65Q70TAFXZC, Tizen 5.5.0, firmware T-NKMAKUC-2743.0 on
-6 November 2026. No Samsung package was disabled or uninstalled.
+6-7 November 2026. No Samsung package was disabled or uninstalled.
 
 CleanYourTV's Android lists group ACR/viewing trackers, telemetry, promotional
 content and launchers, preloaded apps, and unused optional features. Its reversible
@@ -76,8 +76,9 @@ failed loader exited. No security policy was changed.
 
 The subsequent ordinary-Power report also required a Home press to open Four.
 Fresh logs could not be retrieved because the TV was unreachable. See the
-[performance work](performance.md) for prepared responsiveness fixes and the
-remaining measurement gaps.
+[performance work](performance.md) for the installed 0.2.2 responsiveness changes,
+the owner's successful Home/navigation/Apple TV test, app timings, and remaining
+measurement gaps.
 
 The comparison used CleanYourTV's
 [Xiaomi Mi TV 4A list](https://github.com/Gathin23/cleanyourtv/blob/main/examples/xiaomi-mi-tv-4a/debloat.txt),

@@ -3,7 +3,7 @@
 A small, offline Samsung TV dashboard for Apple TV over HDMI, Nintendo Switch 2,
 Stremio, and Steam over HDMI. Built for a QN65Q70TAFXZC running Tizen 5.5.0.
 
-**Status: experimental, tested on one TV.** Version 0.2.1 is installed.
+**Status: experimental, tested on one TV.** Version 0.2.2 is installed.
 The owner confirmed that the Samsung remote's short Home press opens Four without
 Samsung's Home bar. The Home route survived one long-Power restart. Automatic
 startup into Four did not work in that trial.
@@ -11,9 +11,10 @@ There is no measured performance improvement or Samsung package-removal claim.
 
 See [Home routing and recovery](docs/home-route.md) and the
 [Android-to-Samsung cleanup comparison](docs/debloat.md) before installing.
-Version 0.2.2 is prepared for hardware testing, with independent input discovery
-and [optional local startup measurements](docs/performance.md). It is not yet
-installed on the test TV.
+The owner tested Home, navigation, and opening Apple TV on version 0.2.2 and
+reported that it felt very fast. It includes independent input discovery and
+[optional local startup measurements](docs/performance.md). Other input and
+recovery checks remain open; this is not a measured before/after speedup.
 
 ![Four dashboard browser preview](docs/preview.png)
 

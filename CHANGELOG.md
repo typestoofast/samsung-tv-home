@@ -13,6 +13,7 @@
 
 ### Changed
 
+- Record installation of 0.2.2, the owner's successful Home/navigation/Apple TV test, and one diagnostic run with clearly scoped app timings.
 - Record that the physical Home route survived one long-Power restart; automatic startup failed in that trial.
 - Show four destination logos without a greeting, numbered cards, or repeated captions.
 - Identify the Nintendo console as Switch 2.
@@ -20,7 +21,7 @@
 
 ### Fixed
 
-- Keep source discovery independent of app launches and input handoffs. Queue an early HDMI selection until discovery completes, and cancel it on Back or when Four hides. Prepared for hardware testing.
+- Keep source discovery independent of app launches and input handoffs. Queue an early HDMI selection until discovery completes, and cancel it on Back or when Four hides. Installed on the test Q70T; cancellation and the remaining destinations still need hardware checks.
 - Reuse verified in-memory inputs on return while refreshing their state asynchronously.
 - Replace Samsung's existing short-Home target instead of adding a parallel rule that also opens Samsung's bar. Physically confirmed on QN65Q70TAFXZC, T-NKMAKUC-2743.0.
 - Skip a redundant source-change request when reopening the current HDMI input. Keep the normal switch path when the current source cannot be read.

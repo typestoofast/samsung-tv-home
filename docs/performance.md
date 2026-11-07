@@ -1,6 +1,8 @@
 # Performance work and measurement
 
-Version 0.2.2 is prepared for hardware testing. It is not a measured startup fix.
+Version 0.2.2 was installed on the test TV on 7 November 2026. The owner completed
+a Home, navigation, and Apple TV test and reported that it felt very fast.
+Automatic startup remains unresolved, and no before/after speedup is established.
 
 The input path now handles three cases without extra button presses:
 
@@ -13,6 +15,26 @@ The input path now handles three cases without extra button presses:
 The UI uses local assets and has no animation, network request, or deliberate
 rendering delay. Its eight-second API deadlines are error timeouts. They do not
 delay drawing the shortcuts. These code properties do not measure TV response.
+
+## Recorded on the Q70T
+
+One saved diagnostic run on QN65Q70TAFXZC, Tizen 5.5.0,
+T-NKMAKUC-2743.0 recorded:
+
+| Interval | Time |
+|---|---:|
+| Page navigation origin to input handlers ready | 530.4 ms |
+| Page navigation origin to second frame callback | 611.4 ms |
+| Page navigation origin to HDMI inventory ready | 639.6 ms |
+| Warm visibility event to second frame callback | 71.3 ms |
+| Warm visibility event to refreshed HDMI inventory | 81.3 ms |
+
+These are app timings from one run, not a benchmark distribution. A frame callback
+is a rendering opportunity, not a measured visible frame. They exclude the time
+from pressing Home to starting page navigation and do not establish input-to-picture
+latency. The diagnostic recorder itself adds local-storage overhead. The physical
+test and these internal intervals are separate evidence; the retained logs do not
+pair every physical key with a page event.
 
 ## What the captured startup established
 
